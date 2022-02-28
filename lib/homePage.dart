@@ -65,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void scanBarCode() async {
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "ff000000", "Cancel", true, ScanMode.BARCODE);
+        "#ff6666", "Cancel", true, ScanMode.DEFAULT);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(barcodeScanRes)));
   }
