@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -11,6 +12,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,8 +67,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void scanBarCode() async {
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.DEFAULT);
+        "#ff6666", "CANCEL", true, ScanMode.DEFAULT);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(barcodeScanRes)));
+    saveDataInDatabase(barcodeScanRes);
+  }
+
+  void saveDataInDatabase(String uid) {
+    CollectionReference reference = firestore.collection("UID");
+    Map<String, dynamic> data = {"studentUID": uid};
+    reference
+        .add(data)
+        .then((value) => print("UID added"))
+        .catchError((error) => print("Failed to add uid $error"));
+
+    var uidS = getAlldata();
+    print(uidS.toString());
+  }
+
+  Future<QuerySnapshot<Object?>> getAlldata() {
+    CollectionReference reference = firestore.collection("UID");
+    return reference.get();
   }
 }
