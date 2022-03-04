@@ -1,3 +1,4 @@
+import 'package:barcodescanner/uidListPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -17,8 +18,19 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          centerTitle: true,
           title: Text(widget.title),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const UIDList()));
+              },
+              child: const Text(
+                "Scanned Ids",
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          ],
         ),
         body: Column(
           children: [
@@ -73,20 +85,39 @@ class _MyHomePageState extends State<MyHomePage> {
     saveDataInDatabase(barcodeScanRes);
   }
 
-  void saveDataInDatabase(String uid) {
+  void saveDataInDatabase(String uid) async {
     CollectionReference reference = firestore.collection("UID");
     Map<String, dynamic> data = {"studentUID": uid};
-    reference
-        .add(data)
-        .then((value) => print("UID added"))
-        .catchError((error) => print("Failed to add uid $error"));
-
-    var uidS = getAlldata();
-    print(uidS.toString());
+    List uidList = await getAlldata();
+    if (!uidList.contains(uid)) {
+      showDialog(
+          context: context,
+          builder: (context) => dialog(Icons.check, "Get In", Colors.green));
+      reference
+          .add(data)
+          .then((value) => print("UID added"))
+          .catchError((error) => print("Failed to add uid $error"));
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) =>
+              dialog(Icons.close, "Scanned Before!!!", Colors.red));
+    }
   }
 
-  Future<QuerySnapshot<Object?>> getAlldata() {
-    CollectionReference reference = firestore.collection("UID");
-    return reference.get();
+  Widget dialog(IconData icon, String text, Color color) {
+    return Center(
+      child: Container(
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(10)),
+        height: MediaQuery.of(context).size.height / 2,
+        width: MediaQuery.of(context).size.width * 3 / 4,
+        child: Icon(
+          icon,
+          color: color,
+          size: MediaQuery.of(context).size.width / 2,
+        ),
+      ),
+    );
   }
 }
